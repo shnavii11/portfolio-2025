@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vaishnavi Sanap</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=DM+Sans:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="grain-overlay" aria-hidden="true"></div>
+  <div id="canvas-container" aria-hidden="true"></div>
+
+  <header class="ui-overlay">
+    <span class="site-name">Vaishnavi Sanap</span>
+    <button class="about-btn" id="aboutBtn">about ↗</button>
+  </header>
+
+  <div class="panel-backdrop" id="panelBackdrop" aria-hidden="true"></div>
+
+  <aside class="about-panel" id="aboutPanel" aria-label="About" aria-hidden="true">
+    <button class="panel-close" id="panelClose" aria-label="Close">×</button>
+
+    <div class="panel-scroll">
+
+      <section class="panel-section">
+        <p class="section-label">About</p>
+        <p class="about-text">
+          I'm Vaishnavi, a second-year Electronics Engineering student at VJTI, Mumbai.
+          I build things at the intersection of AI, signal processing, and human experience —
+          from multilingual speech recognition systems to intelligent adaptive chatbots.
+          When I'm not coding, I'm painting, dancing, or tending to my garden.
+        </p>
+      </section>
+
+      <section class="panel-section">
+        <p class="section-label">Projects</p>
+
+        <article class="project-card">
+          <div class="project-header">
+            <h2 class="project-title">Voice-to-English Speech Translation System</h2>
+            <a href="https://github.com/shnavii11" target="_blank" rel="noopener noreferrer"
+               class="icon-link" aria-label="GitHub">
+              <i data-lucide="github"></i>
+            </a>
+          </div>
+          <span class="project-stack">Python · PyTorch · Transformers</span>
+          <p class="project-desc">Multilingual speech-to-English pipeline using CNN + BiLSTM + CTC with Neural Machine Translation. Achieved WER of 0.21.</p>
+        </article>
+
+        <article class="project-card">
+          <div class="project-header">
+            <h2 class="project-title">LLM-powered Quiz Chatbot</h2>
+            <a href="https://github.com/shnavii11" target="_blank" rel="noopener noreferrer"
+               class="icon-link" aria-label="GitHub">
+              <i data-lucide="github"></i>
+            </a>
+          </div>
+          <span class="project-stack">Python · FastAPI · React · OpenAI API</span>
+          <p class="project-desc">Adaptive quiz chatbot with semantic answer validation, difficulty scaling, and personalized explanations.</p>
+        </article>
+      </section>
+
+      <section class="panel-section">
+        <p class="section-label">Skills</p>
+        <div class="skills-cloud">
+          <span class="skill-pill">Python</span>
+          <span class="skill-pill">C++</span>
+          <span class="skill-pill">PyTorch</span>
+          <span class="skill-pill">Machine Learning</span>
+          <span class="skill-pill">Neural Networks</span>
+          <span class="skill-pill">HTML / CSS</span>
+          <span class="skill-pill">Git</span>
+          <span class="skill-pill">NumPy</span>
+          <span class="skill-pill">Pandas</span>
+          <span class="skill-pill">FastAPI</span>
+          <span class="skill-pill">React</span>
+        </div>
+      </section>
+
+      <section class="panel-section">
+        <p class="section-label">Contact</p>
+        <a href="mailto:vaishnavisanap1811@gmail.com" class="contact-email">
+          vaishnavisanap1811@gmail.com
+        </a>
+        <div class="contact-links">
+          <a href="https://github.com/shnavii11" target="_blank" rel="noopener noreferrer"
+             class="contact-icon-link">
+            <i data-lucide="github"></i><span>GitHub</span>
+          </a>
+          <a href="https://linkedin.com/in/vaishnavi-sanap" target="_blank" rel="noopener noreferrer"
+             class="contact-icon-link">
+            <i data-lucide="linkedin"></i><span>LinkedIn</span>
+          </a>
+        </div>
+      </section>
+
+    </div>
+  </aside>
+
+  <div class="cursor-ring" id="cursorRing" aria-hidden="true"></div>
+  <div class="cursor-dot"  id="cursorDot"  aria-hidden="true"></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

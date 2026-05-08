@@ -1,23 +1,35 @@
-// ─── Intro text — sliding lines (paragraph-transition style) ─────
+// ─── Intro text — 3D tile block with sliding lines ────────────────
 (function animateIntro() {
+  const stage = document.getElementById('introStage');
   const lines = document.querySelectorAll('.intro-line');
   const total = lines.length;
 
-  // Each line gets a unique phase so they slide at different offsets,
-  // creating the cascading staircase motion from the reference.
-  // Amplitude: how far each line travels px left/right.
-  // Speed: oscillation frequency in radians/second.
-  const amplitude = 38;
-  const speed     = 0.38;
+  // Base 3D rotation — makes the block look like a physical tile
+  const BASE_RX   = 28;    // degrees X (tilt toward viewer)
+  const BASE_RY   = -18;   // degrees Y (tilt right edge away)
+  const DRIFT_AMP = 5;     // how many degrees it breathes
+  const DRIFT_SPD = 0.09;  // rotation drift speed (slow and calm)
+
+  // Per-line slide parameters
+  const SLIDE_AMP = 38;    // px each line travels left/right
+  const SLIDE_SPD = 0.34;  // oscillation speed
 
   function tick() {
     const t = performance.now() / 1000;
+
+    // Slowly breathe the 3D tilt of the whole tile block
+    const rx = BASE_RX + Math.sin(t * DRIFT_SPD)              * DRIFT_AMP;
+    const ry = BASE_RY + Math.sin(t * DRIFT_SPD * 0.71 + 1.3) * DRIFT_AMP;
+    stage.style.transform = `rotateX(${rx}deg) rotateY(${ry}deg)`;
+
+    // Each line slides independently — phases spread evenly so they
+    // never align, creating the continuous staircase shift
     lines.forEach((line, i) => {
-      // Spread phases evenly across 2π so no two lines move in sync
       const phase = (i / total) * Math.PI * 2;
-      const x = Math.sin(t * speed + phase) * amplitude;
+      const x = Math.sin(t * SLIDE_SPD + phase) * SLIDE_AMP;
       line.style.transform = `translateX(${x}px)`;
     });
+
     requestAnimationFrame(tick);
   }
   tick();

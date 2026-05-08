@@ -1,3 +1,28 @@
+// ─── Intro text — sliding lines (paragraph-transition style) ─────
+(function animateIntro() {
+  const lines = document.querySelectorAll('.intro-line');
+  const total = lines.length;
+
+  // Each line gets a unique phase so they slide at different offsets,
+  // creating the cascading staircase motion from the reference.
+  // Amplitude: how far each line travels px left/right.
+  // Speed: oscillation frequency in radians/second.
+  const amplitude = 38;
+  const speed     = 0.38;
+
+  function tick() {
+    const t = performance.now() / 1000;
+    lines.forEach((line, i) => {
+      // Spread phases evenly across 2π so no two lines move in sync
+      const phase = (i / total) * Math.PI * 2;
+      const x = Math.sin(t * speed + phase) * amplitude;
+      line.style.transform = `translateX(${x}px)`;
+    });
+    requestAnimationFrame(tick);
+  }
+  tick();
+})();
+
 // ─── Custom cursor ────────────────────────────────────────────────
 const cursorRing = document.getElementById('cursorRing');
 const cursorDot  = document.getElementById('cursorDot');

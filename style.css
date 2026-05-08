@@ -32,6 +32,38 @@ html, body {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
 }
 
+/* ─── Intro text animation ──────────────────────────────────────── */
+.intro-wrap {
+  position: fixed;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  perspective: 900px;
+  opacity: 0;
+  animation: fadeIn 1s ease-out 1.4s forwards;
+}
+
+.intro-stage {
+  transform: rotateX(14deg) rotateY(-10deg);
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.intro-line {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(26px, 3.6vw, 54px);
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  color: rgba(249, 228, 212, 0.82);
+  line-height: 1.35;
+  white-space: nowrap;
+  will-change: transform;
+  display: block;
+}
+
 /* ─── Canvas ────────────────────────────────────────────────────── */
 #canvas-container {
   position: fixed;

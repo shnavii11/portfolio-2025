@@ -14,17 +14,9 @@
   <div class="grain-overlay" aria-hidden="true"></div>
   <div id="canvas-container" aria-hidden="true"></div>
 
-  <!-- Floating intro text -->
-  <div class="intro-wrap" aria-hidden="true">
-    <div class="intro-fade">
-      <div class="intro-stage" id="introStage">
-        <div class="intro-line">Hi! I'm Vaishnavi —</div>
-        <div class="intro-line">I like tech,</div>
-        <div class="intro-line">I like painting,</div>
-        <div class="intro-line">and I like whimsical</div>
-        <div class="intro-line">photography.</div>
-      </div>
-    </div>
+  <!-- Three.js intro text — word tile blocks -->
+  <div class="intro-fade" aria-hidden="true">
+    <canvas id="intro-canvas"></canvas>
   </div>
 
   <header class="ui-overlay">
@@ -95,6 +87,7 @@
   <div class="cursor-dot"  id="cursorDot"  aria-hidden="true"></div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
   <script src="script.js"></script>
 </body>

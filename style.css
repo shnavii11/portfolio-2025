@@ -32,47 +32,20 @@ html, body {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
 }
 
-/* ─── Intro text animation ──────────────────────────────────────── */
-
-/* .intro-wrap holds perspective — NO opacity/filter here or preserve-3d breaks */
-.intro-wrap {
+/* ─── Intro Three.js canvas ─────────────────────────────────────── */
+.intro-fade {
   position: fixed;
   inset: 0;
   z-index: 5;
   pointer-events: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  perspective: 620px;
-}
-
-/* Opacity lives on a separate wrapper so it never touches the 3D context */
-.intro-fade {
   opacity: 0;
   animation: fadeIn 1.2s ease-out 1.5s forwards;
 }
 
-/* The 3D tile block — JS drives rotateX/rotateY continuously */
-.intro-stage {
-  transform-style: preserve-3d;
-  will-change: transform;
-}
-
-/* Each line is a visible tile strip */
-.intro-line {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: clamp(20px, 3vw, 46px);
-  font-weight: 400;
-  letter-spacing: 0.05em;
-  color: rgba(249, 228, 212, 0.9);
-  line-height: 1;
-  white-space: nowrap;
+#intro-canvas {
   display: block;
-  padding: 11px 30px 11px 20px;
-  margin-bottom: 5px;
-  background: rgba(249, 228, 212, 0.055);
-  border-left: 2px solid rgba(240, 180, 41, 0.45);
-  will-change: transform;
+  width: 100%;
+  height: 100%;
 }
 
 /* ─── Canvas ────────────────────────────────────────────────────── */

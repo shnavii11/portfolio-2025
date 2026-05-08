@@ -1,38 +1,141 @@
-// ─── Intro text — 3D tile block with sliding lines ────────────────
-(function animateIntro() {
-  const stage = document.getElementById('introStage');
-  const lines = document.querySelectorAll('.intro-line');
-  const total = lines.length;
+// ─── Intro text — Three.js word tile blocks ───────────────────────
+(function initIntro() {
+  document.fonts.ready.then(() => {
+    const cvs = document.getElementById('intro-canvas');
 
-  // Base 3D rotation — makes the block look like a physical tile
-  const BASE_RX   = 28;    // degrees X (tilt toward viewer)
-  const BASE_RY   = -18;   // degrees Y (tilt right edge away)
-  const DRIFT_AMP = 5;     // how many degrees it breathes
-  const DRIFT_SPD = 0.09;  // rotation drift speed (slow and calm)
+    const renderer = new THREE.WebGLRenderer({ canvas: cvs, alpha: true, antialias: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(window.innerWidth, window.innerHeight);
 
-  // Per-line slide parameters
-  const SLIDE_AMP = 38;    // px each line travels left/right
-  const SLIDE_SPD = 0.34;  // oscillation speed
+    const scene  = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 100);
+    camera.position.z = 9;
 
-  function tick() {
-    const t = performance.now() / 1000;
+    const group = new THREE.Group();
+    scene.add(group);
 
-    // Slowly breathe the 3D tilt of the whole tile block
-    const rx = BASE_RX + Math.sin(t * DRIFT_SPD)              * DRIFT_AMP;
-    const ry = BASE_RY + Math.sin(t * DRIFT_SPD * 0.71 + 1.3) * DRIFT_AMP;
-    stage.style.transform = `rotateX(${rx}deg) rotateY(${ry}deg)`;
+    // Text split into lines — each word becomes its own 3D tile mesh
+    const LINES = [
+      "Hi! I'm Vaishnavi —",
+      "I like tech,",
+      "I like painting,",
+      "and I like whimsical",
+      "photography."
+    ];
 
-    // Each line slides independently — phases spread evenly so they
-    // never align, creating the continuous staircase shift
-    lines.forEach((line, i) => {
-      const phase = (i / total) * Math.PI * 2;
-      const x = Math.sin(t * SLIDE_SPD + phase) * SLIDE_AMP;
-      line.style.transform = `translateX(${x}px)`;
+    // Per-line colour palette (bg for canvas texture, side for box edges)
+    const LINE_PAL = [
+      { bg: 'rgba(212,160,181,0.18)', side: 0xc490a8 },
+      { bg: 'rgba(249,228,212,0.13)', side: 0xd4a882 },
+      { bg: 'rgba(92,140,90,0.14)',   side: 0x6aaa68 },
+      { bg: 'rgba(240,180,41,0.12)',  side: 0xc8960a },
+      { bg: 'rgba(45,58,110,0.22)',   side: 0x7788bb },
+    ];
+
+    const FPX  = 58;    // font size in canvas pixels
+    const TH   = 0.60;  // tile height in Three.js units
+    const TD   = 0.08;  // tile depth — visible edge when tilted
+    const WGAP = 0.04;  // gap between words
+    const LGAP = 0.07;  // gap between lines
+
+    function makeWordMesh(word, li) {
+      const col = LINE_PAL[li % LINE_PAL.length];
+      const tc  = document.createElement('canvas');
+      const ctx = tc.getContext('2d');
+      const fnt = `400 ${FPX}px 'Cormorant Garamond', Georgia, serif`;
+
+      // Measure then size the canvas
+      ctx.font = fnt;
+      const tw = Math.ceil(ctx.measureText(word).width) + 28;
+      const th = FPX + 22;
+      tc.width  = tw;
+      tc.height = th;
+
+      // Tile background
+      ctx.fillStyle = col.bg;
+      ctx.fillRect(0, 0, tw, th);
+
+      // Thin gold top stripe
+      ctx.fillStyle = 'rgba(240,180,41,0.45)';
+      ctx.fillRect(0, 0, tw, 2);
+
+      // Word text
+      ctx.font = fnt;
+      ctx.fillStyle = 'rgba(249,228,212,0.93)';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(word, 14, th / 2);
+
+      const tex   = new THREE.CanvasTexture(tc);
+      const tileW = TH * (tw / th);
+
+      const geo     = new THREE.BoxGeometry(tileW, TH, TD);
+      const sideMat = new THREE.MeshBasicMaterial({ color: col.side, transparent: true, opacity: 0.45 });
+      const faceMat = new THREE.MeshBasicMaterial({ map: tex, transparent: true });
+
+      // Face order: right, left, top, bottom, front, back
+      const mesh = new THREE.Mesh(geo, [sideMat, sideMat, sideMat, sideMat, faceMat, sideMat]);
+      return { mesh, tileW };
+    }
+
+    // Build meshes grouped by line
+    const lineGroups = LINES.map((lineText, li) => {
+      const words = lineText.split(' ').filter(Boolean);
+      const tiles = words.map(w => makeWordMesh(w, li));
+
+      // Total width of this line for centering
+      const lineW = tiles.reduce((s, t) => s + t.tileW, 0) + WGAP * (tiles.length - 1);
+
+      // Position words along X
+      let x = -lineW / 2;
+      tiles.forEach(t => {
+        t.baseX = x + t.tileW / 2;
+        t.mesh.position.x = t.baseX;
+        x += t.tileW + WGAP;
+        group.add(t.mesh);
+      });
+
+      return { tiles, y: 0 };
     });
 
-    requestAnimationFrame(tick);
-  }
-  tick();
+    // Stack lines vertically and centre the block
+    const blockH = LINES.length * TH + (LINES.length - 1) * LGAP;
+    lineGroups.forEach((lg, i) => {
+      const y = blockH / 2 - TH / 2 - i * (TH + LGAP);
+      lg.y = y;
+      lg.tiles.forEach(t => { t.mesh.position.y = y; });
+    });
+
+    // Animation constants
+    const BR_X = 25 * Math.PI / 180;   // base X rotation (tile tilt)
+    const BR_Y = -16 * Math.PI / 180;  // base Y rotation
+    const DA   =  5 * Math.PI / 180;   // drift amplitude (breathing)
+    const DS   = 0.08;                 // drift speed
+    const SA   = 0.42;                 // line slide amplitude (Three.js units)
+    const SS   = 0.33;                 // line slide speed
+
+    renderer.setAnimationLoop(() => {
+      const t = performance.now() / 1000;
+
+      // Gently breathe the entire tile block in 3D
+      group.rotation.x = BR_X + Math.sin(t * DS)               * DA;
+      group.rotation.y = BR_Y + Math.sin(t * DS * 0.71 + 1.3)  * DA;
+
+      // Slide each line with its own phase — staircase effect
+      lineGroups.forEach((lg, i) => {
+        const phase = (i / lineGroups.length) * Math.PI * 2;
+        const dx    = Math.sin(t * SS + phase) * SA;
+        lg.tiles.forEach(t => { t.mesh.position.x = t.baseX + dx; });
+      });
+
+      renderer.render(scene, camera);
+    });
+
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+  });
 })();
 
 // ─── Custom cursor ────────────────────────────────────────────────

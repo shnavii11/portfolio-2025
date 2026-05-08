@@ -1,12 +1,7 @@
-/* ─── Reset ─────────────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
   --navy:     #1a2340;
-  --gold:     #f0b429;
-  --blush:    #e8c4a0;
-  --sage:     #5c8c5a;
-  --cream:    #f9e4d4;
   --rose:     #d4a0b5;
   --panel-bg: rgba(250, 244, 238, 0.97);
   --text:     #2a1f1f;
@@ -14,52 +9,22 @@
 }
 
 html, body {
-  width: 100%;
-  height: 100%;
+  width: 100%; height: 100%;
   overflow: hidden;
-  cursor: none;
   background: var(--navy);
+  cursor: none;
   font-family: 'DM Sans', sans-serif;
 }
 
-/* ─── Grain overlay ─────────────────────────────────────────────── */
-.grain-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 90;
-  pointer-events: none;
-  opacity: 0.045;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
-}
-
-/* ─── Intro Three.js canvas ─────────────────────────────────────── */
-.intro-fade {
-  position: fixed;
-  inset: 0;
-  z-index: 5;
-  pointer-events: none;
-  opacity: 0;
-  animation: fadeIn 1.2s ease-out 1.5s forwards;
-}
-
-#intro-canvas {
-  display: block;
-  width: 100%;
-  height: 100%;
-}
-
-/* ─── Canvas ────────────────────────────────────────────────────── */
-#canvas-container {
+/* ── Three.js canvas owns the full background ── */
+#main-canvas {
   position: fixed;
   inset: 0;
   z-index: 0;
-  opacity: 0;
-  animation: fadeIn 0.9s ease-out 0.2s forwards;
+  display: block;
 }
 
-#canvas-container canvas { display: block; }
-
-/* ─── UI overlay ────────────────────────────────────────────────── */
+/* ── UI overlay ── */
 .ui-overlay {
   position: fixed;
   top: 0; left: 0; right: 0;
@@ -69,59 +34,44 @@ html, body {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  opacity: 0;
+  animation: fadeUp 0.7s ease-out 0.4s forwards;
 }
 
 .site-name {
   font-family: 'Cormorant Garamond', serif;
   font-size: 18px;
-  font-weight: 400;
   letter-spacing: 0.08em;
   color: rgba(249, 228, 212, 0.9);
-  opacity: 0;
-  animation: fadeUp 0.6s ease-out 0.85s forwards;
 }
 
 .about-btn {
   font-family: 'DM Sans', sans-serif;
   font-size: 12px;
-  font-weight: 400;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: rgba(249, 228, 212, 0.65);
-  background: none;
-  border: none;
-  cursor: none;
-  pointer-events: all;
-  padding: 0;
-  opacity: 0;
-  animation: fadeUp 0.6s ease-out 1.05s forwards;
-  transition: color 0.25s;
+  color: rgba(249, 228, 212, 0.7);
+  background: none; border: none;
+  cursor: none; pointer-events: all; padding: 0;
+  transition: color 0.2s;
 }
-
 .about-btn:hover { color: rgba(249, 228, 212, 1); }
 
-/* ─── Backdrop ──────────────────────────────────────────────────── */
+/* ── Panel backdrop ── */
 .panel-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 19;
-  background: transparent;
-  pointer-events: none;
-  transition: background 0.4s ease;
+  position: fixed; inset: 0; z-index: 19;
+  background: transparent; pointer-events: none;
+  transition: background 0.4s;
 }
-
 .panel-backdrop.active {
-  background: rgba(20, 28, 58, 0.5);
+  background: rgba(20, 28, 58, 0.55);
   pointer-events: all;
 }
 
-/* ─── About panel ───────────────────────────────────────────────── */
+/* ── About panel ── */
 .about-panel {
-  position: fixed;
-  top: 0; right: 0;
-  width: 420px;
-  max-width: 100vw;
-  height: 100vh;
+  position: fixed; top: 0; right: 0;
+  width: 420px; max-width: 100vw; height: 100vh;
   z-index: 20;
   background: var(--panel-bg);
   backdrop-filter: blur(16px);
@@ -129,240 +79,118 @@ html, body {
   border-left: 1px solid rgba(212, 160, 181, 0.3);
   transform: translateX(100%);
   transition: transform 0.44s cubic-bezier(0.16, 1, 0.3, 1);
-  display: flex;
-  flex-direction: column;
+  display: flex; flex-direction: column;
 }
-
 .about-panel.open { transform: translateX(0); }
 
 .panel-close {
-  position: absolute;
-  top: 20px; right: 22px;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 24px;
-  font-weight: 300;
-  line-height: 1;
-  color: var(--muted);
-  background: none;
-  border: none;
-  cursor: none;
-  z-index: 2;
-  padding: 6px;
-  transition: color 0.2s;
+  position: absolute; top: 20px; right: 22px;
+  font-size: 24px; font-weight: 300; line-height: 1;
+  color: var(--muted); background: none; border: none;
+  cursor: none; padding: 6px; transition: color 0.2s;
 }
-
 .panel-close:hover { color: var(--text); }
 
 .panel-scroll {
-  flex: 1;
-  overflow-y: auto;
+  flex: 1; overflow-y: auto;
   padding: 58px 36px 52px;
   scrollbar-width: thin;
   scrollbar-color: rgba(212, 160, 181, 0.3) transparent;
 }
-
-.panel-scroll::-webkit-scrollbar       { width: 3px; }
-.panel-scroll::-webkit-scrollbar-track { background: transparent; }
+.panel-scroll::-webkit-scrollbar { width: 3px; }
 .panel-scroll::-webkit-scrollbar-thumb { background: rgba(212,160,181,0.35); border-radius: 2px; }
 
-/* ─── Panel sections ────────────────────────────────────────────── */
 .panel-section { margin-bottom: 44px; }
 .panel-section:last-child { margin-bottom: 0; }
 
 .section-label {
-  font-size: 10px;
-  font-weight: 400;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: var(--rose);
-  margin-bottom: 18px;
+  font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--rose); margin-bottom: 18px;
 }
 
-.about-text {
-  font-size: 14.5px;
-  font-weight: 300;
-  line-height: 1.82;
-  color: var(--text);
-}
-
-/* ─── Project cards ─────────────────────────────────────────────── */
 .project-card {
-  padding-bottom: 28px;
-  margin-bottom: 28px;
+  padding-bottom: 28px; margin-bottom: 28px;
   border-bottom: 1px solid rgba(212, 160, 181, 0.18);
 }
-
-.project-card:last-child {
-  border-bottom: none;
-  padding-bottom: 0;
-  margin-bottom: 0;
-}
+.project-card:last-child { border-bottom: none; padding-bottom: 0; margin-bottom: 0; }
 
 .project-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 12px;
-  margin-bottom: 7px;
+  display: flex; justify-content: space-between;
+  align-items: flex-start; gap: 12px; margin-bottom: 7px;
 }
 
 .project-title {
   font-family: 'Cormorant Garamond', serif;
-  font-size: 17px;
-  font-weight: 600;
-  color: var(--text);
-  line-height: 1.3;
+  font-size: 17px; font-weight: 600;
+  color: var(--text); line-height: 1.3;
 }
 
 .icon-link {
-  flex-shrink: 0;
-  color: var(--muted);
-  display: flex;
-  align-items: center;
-  margin-top: 3px;
-  transition: color 0.2s;
-  position: relative;
+  flex-shrink: 0; color: var(--muted);
+  display: flex; align-items: center;
+  margin-top: 3px; transition: color 0.2s;
 }
-
-.icon-link::after {
-  content: '';
-  position: absolute;
-  bottom: -2px; left: 0;
-  width: 0; height: 1px;
-  background: var(--rose);
-  transition: width 0.3s ease;
-}
-
 .icon-link:hover { color: var(--text); }
-.icon-link:hover::after { width: 100%; }
 .icon-link svg { width: 16px; height: 16px; }
 
 .project-stack {
-  display: block;
-  font-size: 11px;
-  font-weight: 300;
-  letter-spacing: 0.05em;
-  color: var(--muted);
-  margin-bottom: 9px;
+  display: block; font-size: 11px; font-weight: 300;
+  letter-spacing: 0.05em; color: var(--muted); margin-bottom: 9px;
 }
 
 .project-desc {
-  font-size: 13.5px;
-  font-weight: 300;
-  line-height: 1.72;
-  color: #4d3f3f;
+  font-size: 13.5px; font-weight: 300;
+  line-height: 1.72; color: #4d3f3f;
 }
 
-/* ─── Skills ────────────────────────────────────────────────────── */
-.skills-cloud {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.skill-pill {
-  font-size: 11.5px;
-  font-weight: 300;
-  color: #7a5060;
-  background: rgba(212, 160, 181, 0.14);
-  border: 1px solid rgba(212, 160, 181, 0.28);
-  border-radius: 20px;
-  padding: 5px 14px;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  user-select: none;
-}
-
-.skill-pill:hover {
-  transform: scale(1.05);
-  box-shadow: 0 2px 14px rgba(212, 160, 181, 0.28);
-}
-
-/* ─── Contact ───────────────────────────────────────────────────── */
 .contact-email {
-  display: inline-block;
-  font-size: 13.5px;
-  font-weight: 300;
-  color: var(--text);
-  text-decoration: none;
-  margin-bottom: 20px;
-  position: relative;
+  display: inline-block; font-size: 13.5px; font-weight: 300;
+  color: var(--text); text-decoration: none;
+  margin-bottom: 20px; position: relative;
 }
-
 .contact-email::after {
-  content: '';
-  position: absolute;
-  bottom: -1px; left: 0;
-  width: 0; height: 1px;
-  background: var(--rose);
-  transition: width 0.3s ease;
+  content: ''; position: absolute; bottom: -1px; left: 0;
+  width: 0; height: 1px; background: var(--rose); transition: width 0.3s;
 }
-
 .contact-email:hover::after { width: 100%; }
 
-.contact-links {
-  display: flex;
-  gap: 24px;
-}
+.contact-links { display: flex; gap: 24px; flex-wrap: wrap; }
 
 .contact-icon-link {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  font-size: 13px;
-  font-weight: 300;
-  color: var(--muted);
-  text-decoration: none;
-  transition: color 0.2s;
-  position: relative;
+  display: flex; align-items: center; gap: 7px;
+  font-size: 13px; font-weight: 300;
+  color: var(--muted); text-decoration: none;
+  transition: color 0.2s; position: relative;
 }
-
 .contact-icon-link::after {
-  content: '';
-  position: absolute;
-  bottom: -2px; left: 0;
-  width: 0; height: 1px;
-  background: var(--rose);
-  transition: width 0.3s ease;
+  content: ''; position: absolute; bottom: -2px; left: 0;
+  width: 0; height: 1px; background: var(--rose); transition: width 0.3s;
 }
-
 .contact-icon-link:hover { color: var(--text); }
 .contact-icon-link:hover::after { width: 100%; }
 .contact-icon-link svg { width: 15px; height: 15px; }
 
-/* ─── Custom cursor ─────────────────────────────────────────────── */
+/* ── Custom cursor ── */
 .cursor-ring {
-  position: fixed;
-  width: 12px; height: 12px;
+  position: fixed; width: 12px; height: 12px;
   border: 1.5px solid rgba(240, 180, 41, 0.8);
-  border-radius: 50%;
-  pointer-events: none;
-  z-index: 9999;
+  border-radius: 50%; pointer-events: none; z-index: 9999;
   transform: translate(-50%, -50%);
-  will-change: left, top;
 }
-
 .cursor-dot {
-  position: fixed;
-  width: 4px; height: 4px;
+  position: fixed; width: 4px; height: 4px;
   background: rgba(240, 180, 41, 0.95);
-  border-radius: 50%;
-  pointer-events: none;
-  z-index: 9999;
+  border-radius: 50%; pointer-events: none; z-index: 9999;
   transform: translate(-50%, -50%);
-  will-change: left, top;
 }
 
-/* ─── Animations ────────────────────────────────────────────────── */
-@keyframes fadeIn {
-  to { opacity: 1; }
-}
-
+/* ── Animations ── */
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(8px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* ─── Mobile ────────────────────────────────────────────────────── */
+/* ── Mobile ── */
 @media (max-width: 480px) {
   .about-panel  { width: 100vw; }
   .ui-overlay   { padding: 20px 22px; }

@@ -1,23 +1,22 @@
-// ─── Intro — Lego-style 3D word tile blocks (Three.js) ───────────
-(function initIntro() {
-  if (typeof THREE === 'undefined') return;
-
-  const cvs = document.getElementById('intro-canvas');
-  let renderer;
-  try {
-    renderer = new THREE.WebGLRenderer({ canvas: cvs, alpha: true, antialias: true });
-  } catch (e) { return; }
-
+// ── Lego tile animation ───────────────────────────────────────────
+// Single Three.js canvas handles the full background + tiles.
+// No p5.js, no alpha transparency, no async font waits.
+(function () {
+  const canvas   = document.getElementById('main-canvas');
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
   renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
   renderer.setSize(innerWidth, innerHeight);
 
-  const scene  = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(50, innerWidth / innerHeight, 0.1, 100);
-  camera.position.z = 9;
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x1a2340); // navy — no transparent canvas needed
+
+  const camera = new THREE.PerspectiveCamera(55, innerWidth / innerHeight, 0.1, 1000);
+  camera.position.z = 8;
 
   const group = new THREE.Group();
   scene.add(group);
 
+  // ── Content ──────────────────────────────────────────────────────
   const LINES = [
     "Hi! I'm Vaishnavi —",
     "I like tech,",
@@ -26,42 +25,41 @@
     "photography."
   ];
 
-  // Lego colours — fully opaque, bright, plastic
-  // face: solid front colour  |  side: darker shade for visible depth
+  // Classic Lego colours: face (bright) + side (darker shade)
   const LEGO = [
-    { face: '#D01818', side: 0x961010 },  // Lego red
-    { face: '#F5C200', side: 0xBD9500 },  // Lego yellow
-    { face: '#0070C0', side: 0x005090 },  // Lego blue
-    { face: '#00A050', side: 0x007538 },  // Lego green
-    { face: '#E86000', side: 0xB84A00 },  // Lego orange
+    { face: '#C91A09', side: 0x8B1207 },  // red
+    { face: '#F2CD37', side: 0xB89C2A },  // yellow
+    { face: '#0055BF', side: 0x003D8F },  // blue
+    { face: '#257A3E', side: 0x1A5429 },  // green
+    { face: '#FF7722', side: 0xC05818 },  // orange
   ];
 
-  const FPX  = 62;    // canvas font size px
-  const TH   = 0.64;  // tile height (Three.js units)
-  const TD   = 0.16;  // tile depth — thick so edges show clearly when tilted
-  const WGAP = 0.045; // gap between word tiles
+  const FPX  = 58;    // canvas font px — Arial bold
+  const TH   = 0.62;  // tile height in scene units
+  const TD   = 0.18;  // tile depth — chunky so edges show clearly when tilted
+  const WGAP = 0.05;  // gap between word tiles
   const LGAP = 0.09;  // gap between lines
 
   function buildTile(word, li) {
     const col = LEGO[li % LEGO.length];
 
-    // Offscreen canvas for the face texture
+    // Draw word onto an offscreen canvas for the face texture
     const tc  = document.createElement('canvas');
     const ctx = tc.getContext('2d');
-    const fnt = `600 ${FPX}px Arial, Helvetica, sans-serif`;
+    const fnt = `bold ${FPX}px Arial, Helvetica, sans-serif`;
 
     ctx.font = fnt;
-    const tw = Math.ceil(ctx.measureText(word).width) + 32;
+    const tw = Math.ceil(ctx.measureText(word).width) + 28;
     const th = FPX + 24;
     tc.width = tw;  tc.height = th;
 
-    // Solid Lego colour fill — fully opaque
+    // Solid Lego colour — fully opaque
     ctx.fillStyle = col.face;
     ctx.fillRect(0, 0, tw, th);
 
-    // Plastic sheen: subtle lighter gradient at top
+    // Plastic sheen: white gradient on top half
     const sheen = ctx.createLinearGradient(0, 0, 0, th * 0.5);
-    sheen.addColorStop(0, 'rgba(255,255,255,0.25)');
+    sheen.addColorStop(0, 'rgba(255,255,255,0.30)');
     sheen.addColorStop(1, 'rgba(255,255,255,0)');
     ctx.fillStyle = sheen;
     ctx.fillRect(0, 0, tw, th * 0.5);
@@ -70,24 +68,23 @@
     ctx.font = fnt;
     ctx.fillStyle = '#FFFFFF';
     ctx.textBaseline = 'middle';
-    ctx.shadowColor = 'rgba(0,0,0,0.35)';
+    ctx.shadowColor = 'rgba(0,0,0,0.4)';
     ctx.shadowBlur  = 4;
-    ctx.fillText(word, 16, th / 2);
+    ctx.fillText(word, 14, th / 2);
 
     const tex   = new THREE.CanvasTexture(tc);
     const tileW = TH * (tw / th);
 
     const geo     = new THREE.BoxGeometry(tileW, TH, TD);
-    // Solid opaque materials — no transparency on anything
     const sideMat = new THREE.MeshBasicMaterial({ color: col.side });
     const faceMat = new THREE.MeshBasicMaterial({ map: tex });
 
-    // BoxGeometry face order: +X, -X, +Y, -Y, +Z (front), -Z (back)
+    // BoxGeometry face order: +X, -X, +Y, -Y, +Z(front facing cam), -Z(back)
     const mesh = new THREE.Mesh(geo, [sideMat, sideMat, sideMat, sideMat, faceMat, sideMat]);
     return { mesh, tileW };
   }
 
-  // Build all tiles and lay them out
+  // ── Layout: position every word tile in its line ─────────────────
   const lineGroups = LINES.map((lineText, li) => {
     const words = lineText.split(' ').filter(Boolean);
     const tiles = words.map(w => buildTile(w, li));
@@ -103,33 +100,33 @@
     return { tiles };
   });
 
-  // Stack lines vertically, centred
+  // Stack lines top-to-bottom, centred vertically
   const blockH = LINES.length * TH + (LINES.length - 1) * LGAP;
   lineGroups.forEach((lg, i) => {
     const y = blockH / 2 - TH / 2 - i * (TH + LGAP);
     lg.tiles.forEach(t => { t.mesh.position.y = y; });
   });
 
-  // ── Animation ──────────────────────────────────────────────────
-  const BR_X = 26 * Math.PI / 180;   // base tilt X (lean block toward viewer)
-  const BR_Y = -18 * Math.PI / 180;  // base tilt Y (show right edge)
+  // ── Animation constants ──────────────────────────────────────────
+  const BR_X = 26 * Math.PI / 180;   // base tilt X — leans block toward viewer
+  const BR_Y = -18 * Math.PI / 180;  // base tilt Y — shows right side edge
   const DA   =  6 * Math.PI / 180;   // breathing amplitude
   const DS   = 0.07;                 // breathing speed
-  const SA   = 0.52;                 // line slide amplitude (Three.js units)
-  const SS   = 0.32;                 // line slide speed
+  const SA   = 0.50;                 // line-slide amplitude (scene units)
+  const SS   = 0.30;                 // line-slide speed
 
   renderer.setAnimationLoop(() => {
     const t = performance.now() / 1000;
 
-    // Whole block breathes in 3D
+    // Whole block breathes slowly in 3D
     group.rotation.x = BR_X + Math.sin(t * DS)               * DA;
     group.rotation.y = BR_Y + Math.sin(t * DS * 0.71 + 1.3)  * DA;
 
-    // Each line slides at a unique phase — continuous staircase shift
+    // Each line slides at a unique phase → continuous staircase shift
     lineGroups.forEach((lg, i) => {
       const phase = (i / lineGroups.length) * Math.PI * 2;
       const dx    = Math.sin(t * SS + phase) * SA;
-      lg.tiles.forEach(t => { t.mesh.position.x = t.baseX + dx; });
+      lg.tiles.forEach(tile => { tile.mesh.position.x = tile.baseX + dx; });
     });
 
     renderer.render(scene, camera);
@@ -140,169 +137,41 @@
     camera.updateProjectionMatrix();
     renderer.setSize(innerWidth, innerHeight);
   });
-})();
+}());
 
-// ─── Custom cursor ────────────────────────────────────────────────
+// ── Cursor ────────────────────────────────────────────────────────
 const cursorRing = document.getElementById('cursorRing');
 const cursorDot  = document.getElementById('cursorDot');
-
-let mouseX = window.innerWidth  / 2;
-let mouseY = window.innerHeight / 2;
-let ringX  = mouseX;
-let ringY  = mouseY;
+let mX = innerWidth / 2, mY = innerHeight / 2;
+let rX = mX, rY = mY;
 
 document.addEventListener('mousemove', e => {
-  mouseX = e.clientX;
-  mouseY = e.clientY;
-  cursorDot.style.left = mouseX + 'px';
-  cursorDot.style.top  = mouseY + 'px';
+  mX = e.clientX; mY = e.clientY;
+  cursorDot.style.left = mX + 'px';
+  cursorDot.style.top  = mY + 'px';
 });
 
 (function tickCursor() {
-  ringX += (mouseX - ringX) * 0.12;
-  ringY += (mouseY - ringY) * 0.12;
-  cursorRing.style.left = ringX + 'px';
-  cursorRing.style.top  = ringY + 'px';
+  rX += (mX - rX) * 0.12;
+  rY += (mY - rY) * 0.12;
+  cursorRing.style.left = rX + 'px';
+  cursorRing.style.top  = rY + 'px';
   requestAnimationFrame(tickCursor);
-})();
+}());
 
-// ─── About panel ──────────────────────────────────────────────────
+// ── About panel ───────────────────────────────────────────────────
 const aboutBtn      = document.getElementById('aboutBtn');
 const aboutPanel    = document.getElementById('aboutPanel');
 const panelClose    = document.getElementById('panelClose');
 const panelBackdrop = document.getElementById('panelBackdrop');
 
-function openPanel() {
-  aboutPanel.classList.add('open');
-  aboutPanel.setAttribute('aria-hidden', 'false');
-  panelBackdrop.classList.add('active');
-}
-
-function closePanel() {
-  aboutPanel.classList.remove('open');
-  aboutPanel.setAttribute('aria-hidden', 'true');
-  panelBackdrop.classList.remove('active');
-}
+function openPanel()  { aboutPanel.classList.add('open');    panelBackdrop.classList.add('active');    }
+function closePanel() { aboutPanel.classList.remove('open'); panelBackdrop.classList.remove('active'); }
 
 aboutBtn.addEventListener('click', openPanel);
 panelClose.addEventListener('click', closePanel);
 panelBackdrop.addEventListener('click', closePanel);
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closePanel(); });
 
-// ─── Lucide icons ─────────────────────────────────────────────────
+// ── Lucide icons ──────────────────────────────────────────────────
 lucide.createIcons();
-
-// ─── p5.js canvas ─────────────────────────────────────────────────
-const PALETTE = [
-  [45,  58,  110],   // deep indigo
-  [240, 180,  41],   // amber gold
-  [232, 196, 160],   // warm blush
-  [92,  140,  90],   // sage green
-  [249, 228, 212],   // cream
-  [212, 160, 181],   // dusty rose
-];
-
-new p5(p => {
-  const orbs   = [];
-  const bursts = [];
-  const COUNT  = 100;
-
-  class Orb {
-    constructor(x, y, burst = false) {
-      this.burst = burst;
-      const c  = PALETTE[Math.floor(Math.random() * PALETTE.length)];
-      this.r   = c[0];  this.g = c[1];  this.b = c[2];
-      this.x   = (x !== undefined) ? x : p.random(p.width);
-      this.y   = (y !== undefined) ? y : p.random(p.height);
-      this.sz  = burst ? p.random(3, 14)  : p.random(12, 58);
-      this.vx  = p.random(-0.4, 0.4);
-      this.vy  = p.random(-0.4, 0.4);
-      this.a   = burst ? p.random(0.55, 0.85) : p.random(0.25, 0.55);
-      this.life  = burst ? 1.0 : null;
-      this.decay = burst ? p.random(0.009, 0.019) : null;
-    }
-
-    update() {
-      if (this.burst) {
-        this.life -= this.decay;
-        this.x   += this.vx * 2.2;
-        this.y   += this.vy * 2.2;
-        return;
-      }
-
-      // Soft mouse repulsion
-      const dx   = this.x - p.mouseX;
-      const dy   = this.y - p.mouseY;
-      const dist = Math.hypot(dx, dy);
-      if (dist < 120 && dist > 1) {
-        const f  = (120 - dist) / 120;
-        this.vx += (dx / dist) * f * 0.055;
-        this.vy += (dy / dist) * f * 0.055;
-      }
-
-      // Gentle drift
-      this.vx = this.vx * 0.978 + p.random(-0.007, 0.007);
-      this.vy = this.vy * 0.978 + p.random(-0.007, 0.007);
-      this.vx = p.constrain(this.vx, -0.55, 0.55);
-      this.vy = p.constrain(this.vy, -0.55, 0.55);
-
-      this.x += this.vx;
-      this.y += this.vy;
-
-      // Wrap edges
-      const pad = this.sz;
-      if (this.x < -pad)           this.x = p.width  + pad;
-      if (this.x > p.width  + pad) this.x = -pad;
-      if (this.y < -pad)           this.y = p.height + pad;
-      if (this.y > p.height + pad) this.y = -pad;
-    }
-
-    draw() {
-      const alpha = this.burst ? this.a * this.life : this.a;
-      p.noStroke();
-      // Bokeh layers — concentric circles simulate soft glow
-      p.fill(this.r, this.g, this.b, alpha * 255 * 0.06);
-      p.circle(this.x, this.y, this.sz * 3.2);
-      p.fill(this.r, this.g, this.b, alpha * 255 * 0.12);
-      p.circle(this.x, this.y, this.sz * 2.1);
-      p.fill(this.r, this.g, this.b, alpha * 255 * 0.32);
-      p.circle(this.x, this.y, this.sz * 1.1);
-      p.fill(this.r, this.g, this.b, alpha * 255 * 0.78);
-      p.circle(this.x, this.y, this.sz * 0.45);
-    }
-
-    dead() { return this.burst && this.life <= 0; }
-  }
-
-  p.setup = () => {
-    const cnv = p.createCanvas(p.windowWidth, p.windowHeight);
-    cnv.parent('canvas-container');
-    p.background(26, 35, 64);
-    for (let i = 0; i < COUNT; i++) orbs.push(new Orb());
-  };
-
-  p.draw = () => {
-    // Semi-transparent fill creates trailing motion blur
-    p.fill(26, 35, 64, 18);
-    p.noStroke();
-    p.rect(0, 0, p.width, p.height);
-
-    orbs.forEach(o => { o.update(); o.draw(); });
-
-    for (let i = bursts.length - 1; i >= 0; i--) {
-      if (bursts[i].dead()) { bursts.splice(i, 1); continue; }
-      bursts[i].update();
-      bursts[i].draw();
-    }
-  };
-
-  p.mousePressed = () => {
-    if (aboutPanel.classList.contains('open')) return;
-    const n = 6 + Math.floor(Math.random() * 3);
-    for (let i = 0; i < n; i++) {
-      bursts.push(new Orb(p.mouseX, p.mouseY, true));
-    }
-  };
-
-  p.windowResized = () => p.resizeCanvas(p.windowWidth, p.windowHeight);
-});

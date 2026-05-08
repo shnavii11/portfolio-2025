@@ -6,29 +6,23 @@
   <title>Vaishnavi Sanap</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=DM+Sans:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=DM+Sans:wght@300;400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  <div class="grain-overlay" aria-hidden="true"></div>
-  <div id="canvas-container" aria-hidden="true"></div>
-
-  <!-- Three.js intro text — word tile blocks -->
-  <div class="intro-fade" aria-hidden="true">
-    <canvas id="intro-canvas"></canvas>
-  </div>
+  <!-- Single Three.js canvas — owns the whole background -->
+  <canvas id="main-canvas"></canvas>
 
   <header class="ui-overlay">
     <span class="site-name">Vaishnavi Sanap</span>
     <button class="about-btn" id="aboutBtn">about ↗</button>
   </header>
 
-  <div class="panel-backdrop" id="panelBackdrop" aria-hidden="true"></div>
+  <div class="panel-backdrop" id="panelBackdrop"></div>
 
-  <aside class="about-panel" id="aboutPanel" aria-label="About" aria-hidden="true">
+  <aside class="about-panel" id="aboutPanel" aria-hidden="true">
     <button class="panel-close" id="panelClose" aria-label="Close">×</button>
-
     <div class="panel-scroll">
 
       <section class="panel-section">
@@ -37,8 +31,7 @@
         <article class="project-card">
           <div class="project-header">
             <h2 class="project-title">Voice-to-English Speech Translation System</h2>
-            <a href="https://github.com/shnavii11/Voice2English" target="_blank" rel="noopener noreferrer"
-               class="icon-link" aria-label="GitHub">
+            <a href="https://github.com/shnavii11/Voice2English" target="_blank" rel="noopener noreferrer" class="icon-link" aria-label="GitHub">
               <i data-lucide="github"></i>
             </a>
           </div>
@@ -49,8 +42,7 @@
         <article class="project-card">
           <div class="project-header">
             <h2 class="project-title">LLM-powered Quiz Chatbot</h2>
-            <a href="https://github.com/shnavii11" target="_blank" rel="noopener noreferrer"
-               class="icon-link" aria-label="GitHub">
+            <a href="https://github.com/shnavii11" target="_blank" rel="noopener noreferrer" class="icon-link" aria-label="GitHub">
               <i data-lucide="github"></i>
             </a>
           </div>
@@ -61,20 +53,15 @@
 
       <section class="panel-section">
         <p class="section-label">Contact</p>
-        <a href="mailto:vaishnavisanap1811@gmail.com" class="contact-email">
-          vaishnavisanap1811@gmail.com
-        </a>
+        <a href="mailto:vaishnavisanap1811@gmail.com" class="contact-email">vaishnavisanap1811@gmail.com</a>
         <div class="contact-links">
-          <a href="https://github.com/shnavii11" target="_blank" rel="noopener noreferrer"
-             class="contact-icon-link">
+          <a href="https://github.com/shnavii11" target="_blank" rel="noopener noreferrer" class="contact-icon-link">
             <i data-lucide="github"></i><span>GitHub</span>
           </a>
-          <a href="https://linkedin.com/in/vaishnavi-sanap" target="_blank" rel="noopener noreferrer"
-             class="contact-icon-link">
+          <a href="https://linkedin.com/in/vaishnavi-sanap" target="_blank" rel="noopener noreferrer" class="contact-icon-link">
             <i data-lucide="linkedin"></i><span>LinkedIn</span>
           </a>
-          <a href="https://x.com/pixelpetal59558" target="_blank" rel="noopener noreferrer"
-             class="contact-icon-link">
+          <a href="https://x.com/pixelpetal59558" target="_blank" rel="noopener noreferrer" class="contact-icon-link">
             <i data-lucide="twitter"></i><span>X</span>
           </a>
         </div>
@@ -86,7 +73,6 @@
   <div class="cursor-ring" id="cursorRing" aria-hidden="true"></div>
   <div class="cursor-dot"  id="cursorDot"  aria-hidden="true"></div>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.134.0/build/three.min.js"></script>
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
   <script src="script.js"></script>
